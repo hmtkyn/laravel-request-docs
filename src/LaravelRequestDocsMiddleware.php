@@ -13,7 +13,8 @@ class LaravelRequestDocsMiddleware extends QueryLogger
 
     public function handle($request, Closure $next)
     {
-        if (!$request->headers->has('X-Request-LRD') || !config('app.debug')) {
+        if (!$request->headers->has('X-Request-LRD') || !config('app.debug'))
+        {
             return $next($request);
         }
 
@@ -23,16 +24,17 @@ class LaravelRequestDocsMiddleware extends QueryLogger
         $content = $response->getData();
         $content->_lrd = [
             'queries' => $this->queries,
-            'memory' => (string) round(memory_get_peak_usage(true) / 1048576, 2) . "MB",
+            'memory' => (string)round(memory_get_peak_usage(true) / 1048576, 2) . "MB",
         ];
         $jsonContent = json_encode($content);
 
-        if (in_array('gzip', $request->getEncodings()) && function_exists('gzencode')) {
+        if (in_array('gzip', $request->getEncodings()) && function_exists('gzencode'))
+        {
             $level = 9; // best compression;
             $jsonContent = gzencode($jsonContent, $level);
             $response->headers->add([
                 'Content-type' => 'application/json; charset=utf-8',
-                'Content-Length'=> strlen($jsonContent),
+                'Content-Length' => strlen($jsonContent),
                 'Content-Encoding' => 'gzip',
             ]);
         }
@@ -42,7 +44,8 @@ class LaravelRequestDocsMiddleware extends QueryLogger
 
     public function listenDB()
     {
-        DB::listen(function (QueryExecuted $query) {
+        DB::listen(function (QueryExecuted $query)
+        {
             $this->queries[] = $this->getMessages($query);
         });
     }

@@ -11,6 +11,7 @@ use Illuminate\Routing\Controller;
 class LaravelRequestDocsController extends Controller
 {
     private $laravelRequestDocs;
+    private $laravelRequestDocsToOpenApi;
 
     public function __construct(LaravelRequestDocs $laravelRequestDoc, LaravelRequestDocsToOpenApi $laravelRequestDocsToOpenApi)
     {
@@ -22,16 +23,20 @@ class LaravelRequestDocsController extends Controller
     {
         $docs = $this->laravelRequestDocs->getDocs();
         $docs = $this->laravelRequestDocs->sortDocs($docs, config('request-docs.sort_by', 'default'));
-        if ($request->openapi) {
+        $tags = $this->laravelRequestDocs->getTags();
+
+        if ($request->openapi)
+        {
             return response()->json(
                 $this->laravelRequestDocsToOpenApi->openApi($docs)->toArray(),
                 Response::HTTP_OK,
                 [
-                    'Content-type'=> 'application/json; charset=utf-8'
+                    'Content-type' => 'application/json; charset=utf-8'
                 ],
                 JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             );
         }
-        return view('request-docs::index')->with(compact('docs'));
+
+        return view('request-docs::index')->with(compact('docs', 'tags'));
     }
 }

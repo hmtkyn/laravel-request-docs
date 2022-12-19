@@ -1,3 +1,15 @@
+# New features
+- [x] Generating Group names from Controller names.
+- [x] Grouping endpoints by controller.
+- [x] Fully compatible with Swagger. Try this in [Swagger](https://editor-next.swagger.io/)
+- [x] Fully compatible with Redocly. Try this in [Redocly](http://redocly.github.io/redoc/)
+
+<br>
+
+---
+
+<br>
+
 # MODERNIZATION OF UI RENEWAL is in PROGRESS https://github.com/rakutentech/laravel-request-docs/pull/103
 We request to have code freeze on new pull requests, and request to please submit issues with regards to the UI that we can cover in the new UI renewal.
 

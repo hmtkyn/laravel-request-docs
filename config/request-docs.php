@@ -7,18 +7,18 @@ return [
     'document_name' => 'LRD',
 
     /*
-    * Route where request docs will be served from
-    * localhost:8080/request-docs
-    */
-    'url' => 'request-docs',
+     * Route where request docs will be served from
+     * localhost:8080/request-docs
+     */
+    'url' => '/api/docs',
     'middlewares' => [
         //Example
         // \App\Http\Middleware\NotFoundWhenProduction::class,
     ],
 
     /*
-    * Default headers shown on the request headers editor
-    */
+     * Default headers shown on the request headers editor
+     */
     'default_request_headers' => [
         'Accept' => 'application/json',
         'X-CSRF-TOKEN' => '',
@@ -26,8 +26,8 @@ return [
     ],
 
     /*
-    * Show development relevant metadata on endpoints
-    */
+     * Show development relevant metadata on endpoints
+     */
     'show_development_metadata' => true,
 
     /**
@@ -41,7 +41,7 @@ return [
     'sort_by' => 'route_names',
 
     //Use only routes where ->uri start with next string Using Str::startWith( . e.g. - /api/mobile
-    'only_route_uri_start_with' => '',
+    'only_route_uri_start_with' => '/api/',
 
     'hide_matching' => [
         '#^telescope#',
@@ -67,7 +67,7 @@ return [
         // license that you want to display
         'license' => 'Apache 2.0',
         'license_url' => 'https://www.apache.org/licenses/LICENSE-2.0.html',
-        'server_url' => env('APP_URL', 'http://localhost'),
+        'server_url' => env('APP_URL', 'http://localhost:80'),
 
         // for now putting default responses for all. This can be changed later based on specific needs
         'responses' => [

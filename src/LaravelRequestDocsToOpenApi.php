@@ -7,23 +7,42 @@ use ReflectionMethod;
 use Illuminate\Support\Str;
 use Exception;
 use Throwable;
+use Rakutentech\LaravelRequestDocs\LaravelRequestDocs;
 
 class LaravelRequestDocsToOpenApi
 {
+    private $laravelRequestDocs;
     private $openApi = [];
 
     // docs from $docs = $this->laravelRequestDocs->getDocs();
+    // tags from $tags = $this->laravelRequestDocs->getTags();
+
+    public function __construct(LaravelRequestDocs $laravelRequestDoc)
+    {
+        $this->laravelRequestDocs = $laravelRequestDoc;
+    }
+
     public function openApi(array $docs): LaravelRequestDocsToOpenApi
     {
-        $this->openApi['openapi']                 = config('request-docs.open_api.version', '3.0.0');
-        $this->openApi['info']['version']         = config('request-docs.open_api.document_version', '1.0.0');
-        $this->openApi['info']['title']           = config('request-docs.document_name', 'LRD');
-        $this->openApi['info']['description']     = config('request-docs.document_name', 'LRD');
+        $this->openApi['openapi'] = config('request-docs.open_api.version', '3.0.0');
+        $this->openApi['info']['version'] = config('request-docs.open_api.document_version', '1.0.0');
+        $this->openApi['info']['title'] = config('request-docs.document_name', 'LRD');
+        $this->openApi['info']['description'] = config('request-docs.document_name', 'LRD');
         $this->openApi['info']['license']['name'] = config('request-docs.open_api.license', 'Apache 2.0');
-        $this->openApi['info']['license']['url']  = config('request-docs.open_api.license_url', 'https://www.apache.org/licenses/LICENSE-2.0.html');
-        $this->openApi['servers'][]               = [
+        $this->openApi['info']['license']['url'] = config('request-docs.open_api.license_url', 'https://www.apache.org/licenses/LICENSE-2.0.html');
+        $this->openApi['servers'][] = [
             'url' => config('request-docs.open_api.server_url', config('app.url'))
         ];
+
+        $tagsParameters = [];
+        $tags = $this->laravelRequestDocs->getTags();
+
+        foreach ($tags as $tag)
+        {
+            array_push($tagsParameters, (object)['name' => $tag]);
+        }
+
+        $this->openApi['tags'] = $tagsParameters;
 
         $this->docsToOpenApi($docs);
         return $this;
@@ -32,25 +51,31 @@ class LaravelRequestDocsToOpenApi
     private function docsToOpenApi(array $docs)
     {
         $this->openApi['paths'] = [];
-        foreach ($docs as $doc) {
+        foreach ($docs as $doc)
+        {
             $requestHasFile = false;
             $httpMethod = strtolower($doc['httpMethod']);
-            $isGet    = $httpMethod == 'get';
-            $isPost   = $httpMethod == 'post';
-            $isPut    = $httpMethod == 'put';
+            $isGet = $httpMethod == 'get';
+            $isPost = $httpMethod == 'post';
+            $isPut = $httpMethod == 'put';
             $isDelete = $httpMethod == 'delete';
 
             $this->openApi['paths'][$doc['uri']][$httpMethod]['description'] = $doc['docBlock'];
             $this->openApi['paths'][$doc['uri']][$httpMethod]['parameters'] = [];
+            $this->openApi['paths'][$doc['uri']][$httpMethod]['tags'] = [$doc['tags']];
 
             $this->openApi['paths'][$doc['uri']][$httpMethod]['responses'] = config('request-docs.open_api.responses', []);
 
-            foreach ($doc['rules'] as $attribute => $rules) {
-                foreach ($rules as $rule) {
-                    if ($isPost || $isPut || $isDelete) {
+            foreach ($doc['rules'] as $attribute => $rules)
+            {
+                foreach ($rules as $rule)
+                {
+                    if ($isPost || $isPut || $isDelete)
+                    {
                         $requestHasFile = $this->attributeIsFile($rule);
 
-                        if ($requestHasFile) {
+                        if ($requestHasFile)
+                        {
                             break 2;
                         }
                     }
@@ -59,20 +84,26 @@ class LaravelRequestDocsToOpenApi
 
             $contentType = $requestHasFile ? 'multipart/form-data' : 'application/json';
 
-            if ($isGet) {
+            if ($isGet)
+            {
                 $this->openApi['paths'][$doc['uri']][$httpMethod]['parameters'] = [];
             }
-            if ($isPost || $isPut || $isDelete) {
+            if ($isPost || $isPut || $isDelete)
+            {
                 $this->openApi['paths'][$doc['uri']][$httpMethod]['requestBody'] = $this->makeRequestBodyItem($contentType);
             }
 
-            foreach ($doc['rules'] as $attribute => $rules) {
-                foreach ($rules as $rule) {
-                    if ($isGet) {
+            foreach ($doc['rules'] as $attribute => $rules)
+            {
+                foreach ($rules as $rule)
+                {
+                    if ($isGet)
+                    {
                         $parameter = $this->makeQueryParameterItem($attribute, $rule);
                         $this->openApi['paths'][$doc['uri']][$httpMethod]['parameters'][] = $parameter;
                     }
-                    if ($isPost || $isPut || $isDelete) {
+                    if ($isPost || $isPut || $isDelete)
+                    {
                         $this->openApi['paths'][$doc['uri']][$httpMethod]['requestBody']['content'][$contentType]['schema']['properties'][$attribute] = $this->makeRequestBodyContentPropertyItem($rule);
                     }
                 }
@@ -88,12 +119,12 @@ class LaravelRequestDocsToOpenApi
     protected function makeQueryParameterItem(string $attribute, string $rule): array
     {
         $parameter = [
-            'name'        => $attribute,
+            'name' => $attribute,
             'description' => $rule,
-            'in'          => 'query',
-            'style'       => 'form',
-            'required'    => str_contains($rule, 'required'),
-            'schema'      => [
+            'in' => 'query',
+            'style' => 'form',
+            'required' => str_contains($rule, 'required'),
+            'schema' => [
                 'type' => $this->getAttributeType($rule),
             ],
         ];
@@ -104,7 +135,7 @@ class LaravelRequestDocsToOpenApi
     {
         $requestBody = [
             'description' => "Request body",
-            'content'     => [
+            'content' => [
                 $contentType => [
                     'schema' => [
                         'type' => 'object',
@@ -130,16 +161,20 @@ class LaravelRequestDocsToOpenApi
 
     protected function getAttributeType(string $rule): string
     {
-        if (str_contains($rule, 'string') || $this->attributeIsFile($rule)) {
+        if (str_contains($rule, 'string') || $this->attributeIsFile($rule))
+        {
             return 'string';
         }
-        if (str_contains($rule, 'array')) {
+        if (str_contains($rule, 'array'))
+        {
             return 'array';
         }
-        if (str_contains($rule, 'integer')) {
+        if (str_contains($rule, 'integer'))
+        {
             return 'integer';
         }
-        if (str_contains($rule, 'boolean')) {
+        if (str_contains($rule, 'boolean'))
+        {
             return 'boolean';
         }
         return "object";

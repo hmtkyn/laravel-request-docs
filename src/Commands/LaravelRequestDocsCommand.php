@@ -15,6 +15,7 @@ class LaravelRequestDocsCommand extends Command
     public $description = 'Generate request docs to HTML';
 
     private $laravelRequestDocs;
+    private $laravelRequestDocsToOpenApi;
 
     public function __construct(LaravelRequestDocs $laravelRequestDocs, LaravelRequestDocsToOpenApi $laravelRequestDocsToOpenApi)
     {
@@ -30,7 +31,8 @@ class LaravelRequestDocsCommand extends Command
         $docs = $this->laravelRequestDocs->getDocs();
         $docs = $this->laravelRequestDocs->sortDocs($docs, config('request-docs.sort_by', 'default'));
 
-        if (! File::exists($destinationPath)) {
+        if (!File::exists($destinationPath))
+        {
             File::makeDirectory($destinationPath, 0755, true);
         }
         File::put(
