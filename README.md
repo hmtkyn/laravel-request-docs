@@ -6,6 +6,40 @@
 
 <br>
 
+## Screenshots
+
+### Local UI
+
+<img
+  src="./screenshots/ss-app.png"
+  alt="Local UI"
+  title="Local UI"
+  style="display: flex; justify-content:center; align-items:center; margin: 16px auto; max-width: 100%">
+
+---
+
+<br>
+
+### Swagger UI
+
+<img
+  src="./screenshots/ss-swagger.png"
+  alt="Swagger UI"
+  title="Swagger UI"
+  style="display: flex; justify-content:center; align-items:center; margin: 16px auto; max-width: 100%">
+
+---
+
+<br>
+
+### Redocly UI
+
+<img
+  src="./screenshots/ss-redocly.png"
+  alt="Redocly UI"
+  title="Redocly UI"
+  style="display: flex; justify-content:center; align-items:center; margin: 16px auto; max-width: 100%">
+
 ---
 
 <br>
